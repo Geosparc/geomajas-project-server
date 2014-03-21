@@ -10,21 +10,12 @@
  */
 package org.geomajas.plugin.deskmanager.service.manager;
 
-import java.io.IOException;
-import java.net.URL;
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
-
-import javax.annotation.Resource;
-
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 import org.geomajas.configuration.FeatureInfo;
 import org.geomajas.configuration.GeometryAttributeInfo;
 import org.geomajas.configuration.NamedStyleInfo;
@@ -81,12 +72,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.MultiLineString;
-import com.vividsolutions.jts.geom.MultiPoint;
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
+import javax.annotation.Resource;
+import java.io.IOException;
+import java.net.URL;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
 
 /**
  * @author Kristof Heirwegh
@@ -162,7 +160,8 @@ public class DiscoveryServiceImpl implements DiscoveryService {
 				return res;
 			}
 		} catch (Exception e) {
-			throw new DeskmanagerException(DeskmanagerException.NO_CONNECTION_TO_CAPABILITIES_SERVER, e.getMessage());
+			throw new DeskmanagerException(e, DeskmanagerException.NO_CONNECTION_TO_CAPABILITIES_SERVER,
+					e.getMessage());
 		}
 
 		throw new DeskmanagerException(DeskmanagerException.NO_CONNECTION_TO_CAPABILITIES_SERVER, "Not found");
@@ -174,7 +173,8 @@ public class DiscoveryServiceImpl implements DiscoveryService {
 		try {
 			store = DataStoreFinder.getDataStore(connectionProperties);
 		} catch (Exception e) {
-			throw new DeskmanagerException(DeskmanagerException.NO_CONNECTION_TO_CAPABILITIES_SERVER, e.getMessage());
+			throw new DeskmanagerException(e, DeskmanagerException.NO_CONNECTION_TO_CAPABILITIES_SERVER,
+					e.getMessage());
 		}
 		if (store == null) {
 			throw new DeskmanagerException(DeskmanagerException.NO_CONNECTION_TO_CAPABILITIES_SERVER, "Not found");
@@ -221,7 +221,11 @@ public class DiscoveryServiceImpl implements DiscoveryService {
 				VectorLayerInfo vli = new VectorLayerInfo();
 				vli.setFeatureInfo(fi);
 				vli.setMaxExtent(maxExtent);
-				vli.setCrs(sft.getCoordinateReferenceSystem().getIdentifiers().iterator().next().toString());
+				if (sft.getCoordinateReferenceSystem() != null) {
+					vli.setCrs(sft.getCoordinateReferenceSystem().getIdentifiers().iterator().next().toString());
+				} else {
+					vli.setCrs(defaultGeodesk.getMaps().get(0).getCrs());
+				}
 				vli.setLayerType(toLayerType(sft));
 				vli.getNamedStyleInfos().add(
 						getDefaultStyleInfo(vli.getLayerType(), clientLayerName, identifier.getName()));
@@ -253,7 +257,8 @@ public class DiscoveryServiceImpl implements DiscoveryService {
 				return vlc;
 			}
 		} catch (Exception e) {
-			throw new DeskmanagerException(DeskmanagerException.NO_CONNECTION_TO_CAPABILITIES_SERVER, e.getMessage());
+			throw new DeskmanagerException(e, DeskmanagerException.NO_CONNECTION_TO_CAPABILITIES_SERVER,
+					e.getMessage());
 		}
 		throw new DeskmanagerException(DeskmanagerException.LAYER_NOT_FOUND, layerName);
 	}
@@ -346,7 +351,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
 			rlc.setParameters(params);
 			return rlc;
 		} catch (Exception e) {
-			throw new DeskmanagerException(DeskmanagerException.ERROR_CONSTRUCTING_RASTER_LAYER, e.getMessage());
+			throw new DeskmanagerException(e, DeskmanagerException.ERROR_CONSTRUCTING_RASTER_LAYER, e.getMessage());
 		}
 	}
 
