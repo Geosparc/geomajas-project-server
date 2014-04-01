@@ -10,13 +10,6 @@
  */
 package org.geomajas.plugin.deskmanager.service.common;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.annotation.Resource;
-
 import org.geomajas.configuration.NamedStyleInfo;
 import org.geomajas.configuration.Parameter;
 import org.geomajas.configuration.VectorLayerInfo;
@@ -38,7 +31,15 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 /**
+ * Implementation of the dynamiclayerloadservice.
+ *
  * @author Kristof Heirwegh
  */
 @Component
