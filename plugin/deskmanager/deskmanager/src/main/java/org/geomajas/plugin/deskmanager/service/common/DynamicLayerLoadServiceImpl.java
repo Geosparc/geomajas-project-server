@@ -10,6 +10,7 @@
  */
 package org.geomajas.plugin.deskmanager.service.common;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.geomajas.configuration.NamedStyleInfo;
 import org.geomajas.configuration.Parameter;
 import org.geomajas.configuration.VectorLayerInfo;
@@ -35,7 +36,6 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Implementation of the dynamiclayerloadservice.
@@ -87,17 +87,19 @@ public class DynamicLayerLoadServiceImpl implements DynamicLayerLoadService {
 				try {
 					clientLayerIds.add(lm.getClientLayerId());
 
-					updateLayerProperties(lm.getDynamicLayerConfiguration());
-					objects.addAll(getClientLayerInfoObject(lm.getDynamicLayerConfiguration()));
+					LayerModel clonedLayerModel = (LayerModel) SerializationUtils.clone(lm);
+
+					updateLayerProperties(clonedLayerModel.getDynamicLayerConfiguration());
+					objects.addAll(getClientLayerInfoObject(clonedLayerModel.getDynamicLayerConfiguration()));
 
 					// -- serverside layer bean has to be processed separately --
-					Map<String, Object> params = discoService.createBeanLayerDefinitionParameters(lm
+					Map<String, Object> params = discoService.createBeanLayerDefinitionParameters(clonedLayerModel
 							.getDynamicLayerConfiguration());
 					holders.addAll(beanFactoryService.createBeans(params));
 
 					// Add layer to the dynamicLayersApplication for dto postprocessing
 					applicationInfo.getMaps().get(0).getLayers()
-							.add(lm.getDynamicLayerConfiguration().getClientLayerInfo());
+							.add(clonedLayerModel.getDynamicLayerConfiguration().getClientLayerInfo());
 				} catch (Exception e) {
 					log.warn("Error loading dynamic layers: " + e.getMessage());
 				}
@@ -129,10 +131,10 @@ public class DynamicLayerLoadServiceImpl implements DynamicLayerLoadService {
 		if (lc.getParameter(DynamicLayerConfiguration.PARAM_SOURCE_TYPE) != null
 				&& DynamicLayerConfiguration.SOURCE_TYPE_SHAPE.equals(lc.getParameter(
 						DynamicLayerConfiguration.PARAM_SOURCE_TYPE).getValue())) {
-			lc.getParameters().clear();
 
 			// inject private properties for shapelayers
-			for (Entry<String, String> entry : postgisDataStoreParams.entrySet()) {
+			// this is only used for dbtype and namespace
+			for (Map.Entry<String, String> entry : postgisDataStoreParams.entrySet()) {
 				Parameter p = new Parameter();
 				p.setName(entry.getKey());
 				p.setValue(entry.getValue());
