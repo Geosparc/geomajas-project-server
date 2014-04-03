@@ -118,7 +118,7 @@ public class InfinispanCacheFactory implements CacheFactory {
 			manager = new DefaultCacheManager();
 		}
 		
-		if(listener == null) {
+		if (listener == null) {
 			listener = new InfinispanCacheListener();
 		}
 		manager.addListener(listener);
@@ -180,7 +180,7 @@ public class InfinispanCacheFactory implements CacheFactory {
 						manager.defineConfiguration(configurationName, infinispan);
 					}
 					recorder.record("infinispan", "configuration name " + configurationName);
-					Cache<String, Object> cache = manager.<String, Object> getCache(configurationName);
+					Cache<String, Object> cache = manager.<String, Object>getCache(configurationName);
 					cache.addListener(listener);
 					cacheService = new InfinispanCacheService(cache);
 				} else {
